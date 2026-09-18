@@ -1,0 +1,27 @@
+data:
+  train_images: data/raw/train/train_images
+  annotations: data/raw/train/MAGFiLO_1.0_Annotations_kaggle2026_train.json
+  test_images: data/raw/test/test_images
+  train_split: data/splits/train.txt
+  val_split: data/splits/val.txt
+  val_fraction: 0.15
+  seed: 42
+
+model:
+  backbone: resnet50
+  pretrained: true          # COCO weights
+  num_classes: 2            # background + filament
+
+train:
+  epochs: 20
+  batch_size: 4
+  lr: 0.005
+  momentum: 0.9
+  weight_decay: 0.0005
+  num_workers: 4
+  checkpoint_dir: outputs/checkpoints
+
+predict:
+  score_threshold: 0.5
+  mask_threshold: 0.5
+  output_dir: outputs/submissions
