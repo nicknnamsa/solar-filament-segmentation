@@ -4,8 +4,8 @@ Output is one PNG: the raw image, one panel per annotator, and the model's predi
 if they overlap some annotator filament with IoU > 0.5 (would count as a match), and red if they match none.
 Panel titles give the per-annotator PQ of the model's prediction.
 
-    python scripts/show_predictions.py --checkpoint outputs/checkpoints/raw/last.pt
-    python scripts/show_predictions.py --checkpoint outputs/checkpoints/raw/last.pt --file 20140609195854Bh.jpeg
+    python scripts/show_predictions.py --checkpoint V1/checkpoints/raw/last.pt --config V1/configs/maskrcnn_baseline.yaml
+    python scripts/show_predictions.py --checkpoint V1/checkpoints/raw/last.pt --config V1/configs/maskrcnn_baseline.yaml --file 20140609195854Bh.jpeg
 """
 import argparse
 import json
@@ -55,7 +55,7 @@ def label(img, text):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--file", help="a validation image file name; default: a random validation image")
     parser.add_argument("--seed", type=int, default=0)

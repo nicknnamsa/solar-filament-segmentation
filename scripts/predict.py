@@ -1,6 +1,6 @@
 """Run inference and write an RLE submission CSV (columns: filament_id, segmentation_rle).
 
-    python scripts/predict.py --checkpoint outputs/checkpoints/limb/best.pt --config configs/maskrcnn_limb.yaml
+    python scripts/predict.py --checkpoint V2/checkpoints/run1/best_pq.pt --config V2/configs/maskrcnn_v2.yaml
     python scripts/predict.py --checkpoint ... --split val      # predictions for the local validation images
 
 Instances are made non-overlapping (higher-scoring instances keep contested pixels), and ids are "<image>_<k>".
@@ -57,7 +57,7 @@ def instances_to_df(instances_by_stem, score_threshold):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--split", choices=["test", "val"], default="test")
     parser.add_argument("--score-threshold", type=float, help="default: predict.score_threshold from the config")

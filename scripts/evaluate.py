@@ -3,7 +3,7 @@
 Inference runs once at a low score cutoff; then the cutoff is swept, because PQ punishes false positives and the
 best cutoff is not obvious in advance. Use the best cutoff as `predict.score_threshold` in the config.
 
-    python scripts/evaluate.py --checkpoint outputs/checkpoints/limb/best.pt --config configs/maskrcnn_limb.yaml
+    python scripts/evaluate.py --checkpoint V2/checkpoints/run1/best_pq.pt --config V2/configs/maskrcnn_v2.yaml
 """
 import argparse
 import json
@@ -20,7 +20,7 @@ from predict import instances_to_df, load_model, predict_instances
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     parser.add_argument("--checkpoint", required=True)
     parser.add_argument("--thresholds", type=float, nargs="+", default=[0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9])
     parser.add_argument("--limit", type=int, help="only evaluate N validation images (smoke test)")

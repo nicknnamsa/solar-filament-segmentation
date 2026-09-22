@@ -104,7 +104,7 @@ def process_one(job):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml", help="config with the RAW image folders")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml", help="config with the RAW image folders")
     parser.add_argument("--out", default="data/processed/limb")
     parser.add_argument("--workers", type=int, default=4)
     args = parser.parse_args()

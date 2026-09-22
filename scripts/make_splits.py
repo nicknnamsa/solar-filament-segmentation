@@ -13,7 +13,7 @@ import yaml
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     args = parser.parse_args()
 
     with open(args.config) as f:

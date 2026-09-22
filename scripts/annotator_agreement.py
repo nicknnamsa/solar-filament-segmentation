@@ -42,7 +42,7 @@ def build_dataframes(rank, by_file, anns_by_image, sizes, allowed_files):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     parser.add_argument("--split", choices=["all", "train", "val"], default="all",
                         help="which images to use (default: all training images)")
     args = parser.parse_args()

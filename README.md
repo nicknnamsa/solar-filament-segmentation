@@ -3,7 +3,8 @@
 Instance segmentation of solar filaments in H-Alpha telescope images, for the [Solar Filament Segmentation Challenge 2026](https://www.kaggle.com/competitions/filament-segmentation-2026) on Kaggle.
 
 ## Status
-🚧 In progress — building baseline model
+Run 1 (baseline) is finished: PQ 38.6% on the held-out validation images. Run 2 (augmentation, cleaner labels, PQ-based
+checkpoint selection) reached 39.6% to 40.2% on the same images, a small gain within the noise. See `V1/README.md` and `V2/README.md`.
 
 ## The task
 
@@ -32,19 +33,29 @@ Requires Python 3.11+. Training runs on a rented GPU (RunPod); local machine is 
 
 ## Structure
 
-- `data/` — MAGFiLO dataset (COCO-format annotations) and train/val splits
-- `scripts/` — data loading, training, evaluation, and prediction scripts
-- `notebooks/` — end-to-end pipeline walkthrough
-- `outputs/` — model checkpoints and generated submissions
+- `data/` — MAGFiLO dataset (COCO-format annotations), train/val splits, and derived images (`processed/`)
+- `scripts/` — shared code: data loading, training, evaluation, prediction, scoring (`metrics.py` is the official metric)
+- `notebooks/` — `model_explorer.ipynb` (inspect predictions, tune the score cutoff), `preprocessing_playground.ipynb`, the organisers' `self-evaluation-notebook.ipynb`
+- `V1/` — everything from run 1: configs, checkpoints, logs, results (see `V1/README.md`)
+- `V2/` — run 2: config and, once trained, checkpoints and logs
+- `submissions/` — CSV files to upload to Kaggle, with a log of how each was made
+- `outputs/` — exploratory visualisations
+
+Each run folder holds its own `configs/`, `checkpoints/` and `logs/`; the code in `scripts/` is shared, and new training
+options are switched on from the config, so older configs keep working.
 
 ## Usage
 
 ```bash
-python scripts/check_setup.py       # confirm GPU/environment is working
-python scripts/train.py             # fine-tune Mask R-CNN
-python scripts/evaluate.py          # score against held-out validation split
-python scripts/predict.py           # generate submission CSV
+python scripts/check_setup.py                                             # confirm GPU/environment is working
+python scripts/make_splits.py                                             # only needed once; splits are already in data/splits/
+python scripts/train.py --config V2/configs/maskrcnn_v2.yaml             # fine-tune Mask R-CNN
+python scripts/evaluate.py --checkpoint V2/checkpoints/run1/best_pq.pt   # official PQ on the validation split, several cutoffs
+python scripts/predict.py --checkpoint V2/checkpoints/run1/best_pq.pt    # generate submission CSV
+python scripts/annotator_agreement.py                                     # how well the annotators agree with each other
 ```
+
+To use a run-1 model, pass its config as well, e.g. `--config V1/configs/maskrcnn_baseline.yaml --checkpoint V1/checkpoints/raw/last.pt`.
 
 ## Notes
 

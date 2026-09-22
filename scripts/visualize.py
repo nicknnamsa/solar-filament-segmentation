@@ -84,7 +84,7 @@ def label(img, text):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--config", default="configs/maskrcnn_baseline.yaml")
+    parser.add_argument("--config", default="V2/configs/maskrcnn_v2.yaml")
     parser.add_argument("--file", help="file name to visualize, e.g. 20140609195854Bh.jpeg")
     parser.add_argument("--n", type=int, default=6, help="number of random files if --file is not given")
     parser.add_argument("--seed", type=int, default=0)
