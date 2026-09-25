@@ -3,12 +3,21 @@
 Instance segmentation of solar filaments in H-Alpha telescope images, for the [Solar Filament Segmentation Challenge 2026](https://www.kaggle.com/competitions/filament-segmentation-2026) on Kaggle.
 
 ## Status
-Run 1 (baseline) is finished: PQ 38.6% on the held-out validation images. Run 2 (augmentation, cleaner labels, PQ-based
-checkpoint selection) reached 39.6% to 40.2% on the same images, a small gain within the noise. Run 3 (a wider
-"ignore margin" around near-miss regions) scored slightly lower, 38.6% to 39.4%. Run 4 (V2's recipe, consolidated
-and re-run for 30 epochs) reached 40.5%. Run 5 (a recall-biased Tversky mask loss, motivated by a direct
-diagnosis of V4's misses) is the current best at 40.92%, and is simpler than combining with TTA (which adds
-nothing further on top of it). See `V1/README.md` through `V5/README.md`.
+**Final: V5 (recall-biased Tversky loss) + a merge-radius post-processing step, PQ 41.7% on the held-out
+validation set, verified against the official scorer.** See `notebooks/pipeline_walkthrough.ipynb` for the full
+narrated summary of the project, or the short version below.
+
+Run 1 (baseline): PQ 38.6%. Run 2 (augmentation, cleaner labels, PQ-based checkpoint selection): 39.6-40.2%. Run 3
+(a wider "ignore margin" around near-miss regions) was a regression: 38.6-39.4%, reverted. Run 4 (V2's recipe,
+consolidated, 30 epochs): 40.5%. Run 5 (a recall-biased Tversky mask loss): 40.9%, simpler than combining with
+TTA (which added nothing further on top of it). Run 6a/6b (a size-weighted loss and an anomaly-image-excluded
+training set, both targeting a measured "small/faint filaments get missed entirely" pattern): neither beat V5.
+A side investigation into a different architecture (EdgeAttNet, a published edge-attention U-Net, reimplemented
+cleanly rather than using the authors' released weights due to a real leakage risk) also underperformed V5, as
+did every tested way of ensembling it with V5. The one thing that *did* help: post-training, merging nearby
+detections (`predict.merge_nearby_instances`) gave V5 a free +0.8pp, since 78% of its false positives turned out
+to be near-duplicates of real filaments rather than pure noise. See `V1/README.md` through `V6/README.md` and
+`EdgeAttNet/README.md` for the full detail behind each of these.
 
 ## The task
 
@@ -39,9 +48,13 @@ Requires Python 3.11+. Training runs on a rented GPU (RunPod); local machine is 
 
 - `data/` — MAGFiLO dataset (COCO-format annotations), train/val splits, and derived images (`processed/`)
 - `scripts/` — shared code: data loading, training, evaluation, prediction, scoring (`metrics.py` is the official metric)
-- `notebooks/` — `model_explorer.ipynb` (inspect predictions, tune the score cutoff), `preprocessing_playground.ipynb`, the organisers' `self-evaluation-notebook.ipynb`
-- `V1/` — everything from run 1: configs, checkpoints, logs, results (see `V1/README.md`)
-- `V2/` — run 2: config and, once trained, checkpoints and logs
+- `notebooks/` — `pipeline_walkthrough.ipynb` (the full project summary — start here), `model_explorer.ipynb`
+  (inspect predictions, tune the score cutoff), `preprocessing_playground.ipynb`, the organisers'
+  `self-evaluation-notebook.ipynb`
+- `V1/` through `V6/` — each numbered run: configs, checkpoints, logs, results (see each run's own `README.md`)
+- `EdgeAttNet/` — a side investigation into a different, purpose-built architecture; underperformed V5 (see its README)
+- `anomaly_classifier/` — a small classifier trained on an external good/anomalous image-quality dataset; not
+  currently wired into the main pipeline (see the note in that folder)
 - `submissions/` — CSV files to upload to Kaggle, with a log of how each was made
 - `outputs/` — exploratory visualisations
 
