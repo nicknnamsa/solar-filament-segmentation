@@ -1,0 +1,59 @@
+# Run 6b: single-variable ablation on top of V5's recipe -- train with the 3 known-anomalous training images
+# excluded (data/splits/train_no_anomalous.txt), identical in every other way to V5 (same plain Tversky loss,
+# augmentation, etc.). Isolates the data-quality question from the loss-reweighting question in 6a.
+#
+# The exclusion list comes from the "GONG H-Alpha Anomaly Dataset" (external, human-labeled good/anomalous
+# classification -- no filament labels, so this carries no test-answer leakage risk, unlike the public MAGFiLO
+# release we've deliberately avoided). 5 of our 707 filament-labeled images are flagged anomalous; 2 fall in our
+# validation split (left untouched -- we still score against real val data) and 3 in train (excluded here).
+# Visual inspection: at least one flagged image showed a real, visible defect (a soft, diffuse limb edge and
+# uneven background, unlike the crisp limb ring in every clean image checked). The 2 flagged validation images
+# show below-average catch rates (44-50% vs the ~57% overall average) -- real but modest, since only 0.7-2.2%
+# of our images are flagged at all; this ablation measures whether removing the label noise from training helps.
+data:
+  train_images: data/raw/train/train_images
+  annotations: data/raw/train/MAGFiLO_1.0_Annotations_kaggle2026_train.json
+  test_images: data/raw/test/test_images
+  train_split: data/splits/train_no_anomalous.txt   # the only change from V5
+  val_split: data/splits/val.txt
+  val_fraction: 0.15
+  seed: 42
+
+model:
+  backbone: resnet50
+  pretrained: true
+  num_classes: 2
+  min_size: 2048
+  max_size: 2048
+  max_detections: 100
+
+train:
+  epochs: 30
+  batch_size: 4
+  lr: 0.01
+  warmup_iters: 200
+  momentum: 0.9
+  weight_decay: 0.0005
+  num_workers: 16
+  seed: 0
+  amp: true
+  fast_loader: true
+  augment:
+    flip: true
+    rot90: true
+    brightness: 0.1
+    contrast: 0.1
+  sample_one_annotator: true
+  agreement:
+    iou: 0.3
+  eval_every: 2
+  mask_loss:
+    alpha: 0.3
+    beta: 0.7
+  save_every: 10
+  checkpoint_dir: V6/checkpoints/run_b_no_anomalous
+
+predict:
+  score_threshold: 0.8
+  mask_threshold: 0.5
+  output_dir: submissions

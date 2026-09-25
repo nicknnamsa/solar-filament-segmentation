@@ -1,0 +1,62 @@
+# Run 6a: single-variable test on top of V5's recipe (our best so far) -- size-weighted Tversky mask loss
+# (scripts/losses.py: size_weighted_tversky_mask_loss), instead of V5's plain (unweighted) Tversky loss.
+#
+# Motivated by a direct measurement, not a guess (see V5/README.md's data-diagnosis addendum): filaments V5
+# misses ENTIRELY (zero overlap with any prediction) are ~44% smaller in area and ~40% shorter than the ones it
+# catches, while shape/elongation show no difference at all -- ruling out "weird-shaped filaments" as the cause.
+# Weather/image blur was also checked and ruled out (correlation ~0 with miss rate across the validation set).
+# Plain BCE/Tversky reduce over all instances' pixels in a batch together, so a handful of large filaments
+# dominate the gradient and small ones barely register. This reweights per-instance so a small filament counts
+# as much as a large one, not as little as its pixel count would otherwise give it. Everything else is
+# identical to V5 (same augmentation, one-annotator-per-epoch, agreement filter, 30 epochs).
+data:
+  train_images: data/raw/train/train_images
+  annotations: data/raw/train/MAGFiLO_1.0_Annotations_kaggle2026_train.json
+  test_images: data/raw/test/test_images
+  train_split: data/splits/train.txt
+  val_split: data/splits/val.txt
+  val_fraction: 0.15
+  seed: 42
+
+model:
+  backbone: resnet50
+  pretrained: true
+  num_classes: 2
+  min_size: 2048
+  max_size: 2048
+  max_detections: 100
+
+train:
+  epochs: 30
+  batch_size: 4
+  lr: 0.01
+  warmup_iters: 200
+  momentum: 0.9
+  weight_decay: 0.0005
+  num_workers: 16
+  seed: 0
+  amp: true
+  fast_loader: true
+  augment:
+    flip: true
+    rot90: true
+    brightness: 0.1
+    contrast: 0.1
+  sample_one_annotator: true
+  agreement:
+    iou: 0.3
+  eval_every: 2
+  mask_loss:                  # the only change from V5
+    type: size_weighted_tversky
+    alpha: 0.3
+    beta: 0.7
+    weight_power: 0.5
+    min_weight: 0.5
+    max_weight: 3.0
+  save_every: 10
+  checkpoint_dir: V6/checkpoints/run_a_sizeweighted
+
+predict:
+  score_threshold: 0.8
+  mask_threshold: 0.5
+  output_dir: submissions

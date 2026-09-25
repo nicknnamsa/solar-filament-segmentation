@@ -4,7 +4,11 @@ Instance segmentation of solar filaments in H-Alpha telescope images, for the [S
 
 ## Status
 Run 1 (baseline) is finished: PQ 38.6% on the held-out validation images. Run 2 (augmentation, cleaner labels, PQ-based
-checkpoint selection) reached 39.6% to 40.2% on the same images, a small gain within the noise. See `V1/README.md` and `V2/README.md`.
+checkpoint selection) reached 39.6% to 40.2% on the same images, a small gain within the noise. Run 3 (a wider
+"ignore margin" around near-miss regions) scored slightly lower, 38.6% to 39.4%. Run 4 (V2's recipe, consolidated
+and re-run for 30 epochs) reached 40.5%. Run 5 (a recall-biased Tversky mask loss, motivated by a direct
+diagnosis of V4's misses) is the current best at 40.92%, and is simpler than combining with TTA (which adds
+nothing further on top of it). See `V1/README.md` through `V5/README.md`.
 
 ## The task
 

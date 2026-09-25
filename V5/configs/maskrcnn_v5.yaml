@@ -1,0 +1,62 @@
+# Run 2: raw images, augmentation, one annotator per image per epoch, filaments only one annotator drew are dropped,
+# mixed precision + larger batch, PQ scored every 2 epochs, best epoch kept by PQ.
+# Run 5: single-variable test on top of V4's recipe (our best so far) -- a Tversky mask loss (alpha=0.3,
+# beta=0.7) that penalizes under-covering a filament's true mask (false negatives) more than over-covering it
+# (false positives), on top of the standard BCE. Motivated by a direct measurement (V4/README.md): of our
+# missed filaments, ~59% are cases where the model DID detect something in roughly the right place, but the
+# mask was too imprecise (18% badly so, 41% just short of the 0.5 IoU matching threshold). This targets those
+# specifically, by making the network draw fuller, more generous masks. It does NOT target the other ~38% of
+# misses (correctly-shaped detections that scored under our cutoff) -- that's what TTA is for instead.
+# Run 4: everything with a proven positive effect, bundled and cleaned up. Identical to V2's recipe (the box/rpn
+# IoU-margin widening from V3 was a regression and is NOT included here -- this config leaves those keys unset,
+# so model.py falls back to torchvision's original thresholds, same as V2). Two refinements: PQ checked every
+# epoch instead of every 2 (finer-grained best-checkpoint selection), and 30 epochs instead of 40, since V2
+# peaked around epoch 18-20 and epochs 30-40 only kept overfitting further.
+data:
+  train_images: data/raw/train/train_images
+  annotations: data/raw/train/MAGFiLO_1.0_Annotations_kaggle2026_train.json
+  test_images: data/raw/test/test_images
+  train_split: data/splits/train.txt
+  val_split: data/splits/val.txt
+  val_fraction: 0.15
+  seed: 42
+
+model:
+  backbone: resnet50
+  pretrained: true          # COCO weights
+  num_classes: 2            # background + filament
+  min_size: 2048            # images are 2048x2048; filaments are small (median area ~900 px), so avoid downscaling
+  max_size: 2048
+  max_detections: 100
+
+
+train:
+  epochs: 30                # V2 peaked at epoch 18-20 of 40; 30 gives margin without paying for epochs that only overfit
+  batch_size: 4             # run 1 used 2; one run peaked at 8 GB, and mixed precision needs less
+  lr: 0.01                  # scaled with the batch size (run 1: 0.005 at batch size 2)
+  warmup_iters: 200
+  momentum: 0.9
+  weight_decay: 0.0005
+  num_workers: 16
+  seed: 0
+  amp: true                 # mixed precision, CUDA only
+  fast_loader: true         # 8-bit images from the loader, converted on the GPU; pinned memory, persistent workers
+  augment:
+    flip: true
+    rot90: true
+    brightness: 0.1
+    contrast: 0.1
+  sample_one_annotator: true
+  agreement:
+    iou: 0.3                # drop filaments that no other annotator of the same image drew (IoU >= 0.3)
+  eval_every: 2             # reverted to V2's cadence: this run's pod had a slow eval step, every-epoch was too costly
+  mask_loss:                # see losses.py; the only change from V4
+    alpha: 0.3              # false-positive weight
+    beta: 0.7               # false-negative weight (higher = more generous masks)
+  save_every: 10            # also keep epoch_10.pt, epoch_20.pt, ...
+  checkpoint_dir: V5/checkpoints/run1
+
+predict:
+  score_threshold: 0.8      # best cutoff found for run 1 (PQ is flat between about 0.55 and 0.875)
+  mask_threshold: 0.5
+  output_dir: submissions

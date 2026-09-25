@@ -9,3 +9,7 @@ tqdm
 matplotlib
 scikit-learn
 jupyter
+scikit-image
+scipy
+ipywidgets
+PyWavelets

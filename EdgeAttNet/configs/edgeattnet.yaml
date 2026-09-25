@@ -1,0 +1,41 @@
+# EdgeAttNet: reimplemented from arXiv:2509.02964's architecture description (NOT the authors' released weights,
+# which were trained on a MAGFiLO split overlapping our held-out test set -- see EdgeAttNet/README.md).
+# Semantic segmentation, not instance segmentation: connected components + mean-probability scoring turn its
+# output into per-filament instances (scripts/edgeattnet_predict.py) so it plugs into the same evaluate.py /
+# predict.py pipeline and PQ scoring as V1-V5.
+#
+# Same training philosophy as V2/V4/V5 (augmentation, one-annotator-per-epoch, agreement filter, PQ-based
+# checkpoint selection) layered on top of the paper's own recipe (Adam 1e-4, BCE+Dice loss) -- the paper trained
+# with no augmentation and no pretrained weights; we deviate there since augmentation/agreement-filtering are our
+# own already-validated wins, not something to re-litigate for a new architecture with no other changes.
+data:
+  train_images: data/raw/train/train_images
+  annotations: data/raw/train/MAGFiLO_1.0_Annotations_kaggle2026_train.json
+  test_images: data/raw/test/test_images
+  train_split: data/splits/train.txt
+  val_split: data/splits/val.txt
+
+train:
+  epochs: 50                # matches the paper
+  batch_size: 2              # revisit after the GPU probe measures real memory use
+  lr: 0.0001                 # matches the paper (Adam, 1e-4)
+  num_workers: 8
+  seed: 0
+  augment:
+    flip: true
+    rot90: true
+    brightness: 0.1
+    contrast: 0.1
+  sample_one_annotator: true
+  agreement:
+    iou: 0.3
+  eval_every: 5              # PQ eval is a full inference pass over all validation images; keep this coarser
+                              # than V2-V5's every-2 given EdgeAttNet's cost is still unmeasured
+  save_every: 10
+  checkpoint_dir: EdgeAttNet/checkpoints/run1
+
+predict:
+  mask_threshold: 0.5        # binarizes the probability map before connected-component labelling
+  score_threshold: 0.5       # default cutoff for keeping a component; re-tune after evaluation, as with V1-V5
+  min_area: 20                # drop components smaller than this many pixels (likely noise)
+  output_dir: submissions
