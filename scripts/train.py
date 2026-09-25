@@ -12,6 +12,7 @@ missing, so the configs of the first run (V1/) still train exactly as they did:
     eval_every, eval_cutoffs                   score PQ on the validation images every N epochs and keep the best
                                                epoch by PQ (best_pq.pt, best_pq.json)
     save_every                                 also keep epoch_<n>.pt every N epochs
+    mask_loss                                  recall-biased Tversky mask loss instead of plain BCE; see losses.py
     seed
 Each run writes history.csv (losses by component, PQ) and a copy of its config next to the checkpoints.
 """
@@ -32,6 +33,7 @@ from tqdm import tqdm
 
 from dataset import FilamentDataset, apply_jitter, collate_fn, load_image_tensor, read_split
 from fast_pq import build_ground_truth, pq_from_stats, sweep_stats
+from losses import patch_mask_loss
 from model import build_model, get_device
 from predict import predict_instances
 
@@ -89,6 +91,7 @@ def main():
     epochs = args.epochs or t["epochs"]
     device = get_device()
     print(f"device: {device}")
+    patch_mask_loss(cfg)
 
     if t.get("seed") is not None:
         random.seed(t["seed"])

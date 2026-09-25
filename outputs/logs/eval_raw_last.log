@@ -1,15 +1,0 @@
-/workspace/solar/scripts/dataset.py:23: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:203.)
-  return torch.as_tensor(np.asarray(image), dtype=torch.float32).permute(2, 0, 1) / 255.0
-inference 1/106inference 2/106inference 3/106inference 4/106inference 5/106inference 6/106inference 7/106inference 8/106inference 9/106inference 10/106inference 11/106inference 12/106inference 13/106inference 14/106inference 15/106inference 16/106inference 17/106inference 18/106inference 19/106inference 20/106inference 21/106inference 22/106inference 23/106inference 24/106inference 25/106inference 26/106inference 27/106inference 28/106inference 29/106inference 30/106inference 31/106inference 32/106inference 33/106inference 34/106inference 35/106inference 36/106inference 37/106inference 38/106inference 39/106inference 40/106inference 41/106inference 42/106inference 43/106inference 44/106inference 45/106inference 46/106inference 47/106inference 48/106inference 49/106inference 50/106inference 51/106inference 52/106inference 53/106inference 54/106inference 55/106inference 56/106inference 57/106inference 58/106inference 59/106inference 60/106inference 61/106inference 62/106inference 63/106inference 64/106inference 65/106inference 66/106inference 67/106inference 68/106inference 69/106inference 70/106inference 71/106inference 72/106inference 73/106inference 74/106inference 75/106inference 76/106inference 77/106inference 78/106inference 79/106inference 80/106inference 81/106inference 82/106inference 83/106inference 84/106inference 85/106inference 86/106inference 87/106inference 88/106inference 89/106inference 90/106inference 91/106inference 92/106inference 93/106inference 94/106inference 95/106inference 96/106inference 97/106inference 98/106inference 99/106inference 100/106inference 101/106inference 102/106inference 103/106inference 104/106inference 105/106inference 106/106
-106 validation images, 170 annotator versions, 1258 ground-truth filaments
-
- cutoff      PQ  matched  spurious  missed  mean IoU
-   0.30   35.1%      777       858     481      0.65
-   0.40   36.4%      769       734     489      0.65
-   0.50   37.4%      759       636     499      0.65
-   0.60   37.8%      732       549     526      0.65
-   0.70   38.2%      705       461     553      0.66
-   0.80   38.6%      678       377     580      0.66
-   0.90   37.4%      585       229     673      0.66
-
-best: PQ 38.6% at score cutoff 0.8

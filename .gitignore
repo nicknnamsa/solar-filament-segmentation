@@ -9,5 +9,9 @@ data/raw/train/train_images/*
 data/raw/test/test_images/*
 data/raw/train/*.json
 outputs/checkpoints/*
-outputs/submissions/*
 !.gitkeep
+outputs/visualizations/
+data/processed/
+
+# model checkpoints (large binaries) -- matches at any depth, e.g. models/V5/checkpoints/, models/EdgeAttNet/checkpoints/
+**/checkpoints/

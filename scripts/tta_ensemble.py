@@ -28,58 +28,9 @@ from fast_pq import build_ground_truth, pq_from_stats, sweep_stats
 from metrics import get_overlap_df, pq_breakdown
 from model import get_device
 from predict import instances_to_df, load_model, predict_instances
+from tta import SIZE, cluster_instances, dihedral_forward_image, dihedral_inverse_mask
 
-SIZE = (2048, 2048)
 SCORE_CUTOFFS = [round(c, 2) for c in np.arange(0.3, 0.96, 0.05)]
-
-
-def as_rle_dicts(rles):
-    return [{"size": list(SIZE), "counts": r.encode("ascii")} for r in rles]
-
-
-def dihedral_forward_image(image, i):
-    """i in 0..7: the 8 symmetries of a square. image is a (C, H, W) tensor."""
-    k, flip = i % 4, i >= 4
-    x = image.flip(-1) if flip else image
-    return torch.rot90(x, k, (1, 2))
-
-
-def dihedral_inverse_mask(mask, i):
-    """Undo dihedral_forward_image on a (H, W) numpy mask."""
-    k, flip = i % 4, i >= 4
-    x = np.rot90(mask, -k)
-    return np.fliplr(x) if flip else x
-
-
-def cluster_instances(items, iou_thresh):
-    """items: [(score, rle, source_id), ...]. Returns [(rle, max_score, n_distinct_sources), ...], one per cluster,
-    using each cluster's highest-scoring member's mask."""
-    n = len(items)
-    if n == 0:
-        return []
-    rles = as_rle_dicts([r for _, r, _ in items])
-    iou = mask_util.iou(rles, rles, [0] * n)
-    parent = list(range(n))
-
-    def find(a):
-        while parent[a] != a:
-            parent[a] = parent[parent[a]]
-            a = parent[a]
-        return a
-
-    for i in range(n):
-        for j in range(i + 1, n):
-            if iou[i, j] >= iou_thresh:
-                parent[find(i)] = find(j)
-
-    groups = {}
-    for i in range(n):
-        groups.setdefault(find(i), []).append(i)
-    out = []
-    for idx in groups.values():
-        best = max(idx, key=lambda i: items[i][0])
-        out.append((items[best][1], items[best][0], len({items[i][2] for i in idx})))
-    return out
 
 
 def sweep_by_score(clusters_by_file, cutoff):
